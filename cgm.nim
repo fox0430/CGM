@@ -1,8 +1,11 @@
-proc calcInnerProduct(a, b: seq[float64]): float64 =
-  assert a.len == b.len
+type
+  Vector = seq[float64]
+  Matrix = seq[seq[float64]]
+
+proc dot(a, b: Vector): float64 =
   for i in 0 ..< a.len: result = result + (a[i] * b[i])
 
-proc calcInnerProduct(a, b: seq[seq[float64]]): seq[seq[float64]] =
+proc tensorDot(a, b: Matrix): Matrix =
   for i in 0 ..< a.len: assert a[i].len == b.len
 
   for i in 0 ..< a.len:
@@ -12,18 +15,59 @@ proc calcInnerProduct(a, b: seq[seq[float64]]): seq[seq[float64]] =
       for k in 0 ..< b.len:
         result[i][j] = result[i][j] + (a[i][k] * b[k][j])
 
-proc solver[T](A: seq[seq[float64]], b: seq[float64], x: T) = discard
+proc innerProduct(a, b: Vector): float64 =
+  for i in 0 ..< a.len:
+    result = result + a[i] * b[i]
+
+proc `*`(a, b: Matrix): Matrix = return tensorDot(a, b)
+
+proc `*`(a, b: Vector): float64 = return dot(a, b)
+
+proc `*`(m: Matrix, v: Vector): Vector =
+  for i in 0 ..< v.len:
+    result.add(@[float64(0)])
+    for j in 0 ..< m[i].len:
+      result[i] = result[i] + (m[i][j] * v[i])
+
+proc `*`(m: Vector, f: float64): Vector =
+  for i in 0 ..< m.len: result.add(m[i] * f)
+
+proc `+`(a, b: Matrix): Matrix =
+  for i in 0 ..< a.len:
+    result.add(@[])
+    for j in 0 ..< a.len:
+      result[i].add(a[i][j] + b[i][j])
+
+proc `+`(a, b: Vector): Vector =
+  for i in 0 ..< a.len: result.add(a[i] + b[i])
+
+proc `+`(v: Vector, f: float64): Vector =
+  for i in 0 ..< v.len: result.add(v[i] + f)
+
+proc `-`(a, b: Matrix): Matrix =
+  for i in 0 ..< a.len:
+    result.add(@[])
+    for j in 0 ..< a.len:
+      result[i].add(a[i][j] - b[i][j])
+
+proc `-`(a, b: Vector): Vector =
+  for i in 0 ..< b.len:
+    result.add(a[i] - b[i])
+
+proc T(matrix: Matrix): Matrix =
+  for i in 00 ..< matrix.len:
+    result.add(@[])
+    for j in 0 ..< matrix.len:
+      result[i].add(matrix[j][i])
+
+proc CGSolver(A: Matrix, b, x0: Vector) =
+  var m = A.T * (A * x0 - b)
+  var t = -(innerProduct(m, A.T * (A * x0 - b))) / (innerProduct(m, A.T * A * m))
+  var x = x0 + m * t
+  echo x
 
 when isMainModule:
-  ## test calcInnerProduct1
-  let A = @[float64(1), float64(2), float64(3)]
-  let B = @[float64(2), float64(4), float64(6)]
-  echo calcInnerProduct(A, B)
-
-  ## test calcInnerProduct1
-  let C = @[@[float64(1), float64(1)], @[float64(2), float64(2)], @[float64(3), float64(3)]]
-  let D = @[@[float64(1), float64(2)], @[float64(3), float64(4)]]
-  echo calcInnerProduct(C, D)
-
-  let x0 = @[@[float64(0)], @[float64(0)], @[float64(0)]]
-  solver(C, B, x0)
+  let A:Matrix = @[@[float64(1), float64(0), float64(0)], @[float64(0), float64(2), float64(0)], @[float64(0), float64(0), float64(1)]]
+  let b:Vector = @[float64(4), float64(5), float64(6)]
+  let x:Vector = @[float64(0), float64(0), float64(0)]
+  CGSolver(A, b, x)
