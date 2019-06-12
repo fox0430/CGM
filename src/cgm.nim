@@ -22,7 +22,7 @@ proc `*`(a, b: Vector): float64 = return dot(a, b)
 
 proc `*`(m: Matrix, v: Vector): Vector =
   for i in 0 ..< v.len:
-    result.add(@[float64(0)])
+    result.add(@[0'f64])
     for j in 0 ..< m[i].len:
       result[i] = result[i] + (m[i][j] * v[i])
 
@@ -59,7 +59,7 @@ proc T(matrix: Matrix): Matrix =
 
 proc CGSolver(A: Matrix, b, x0: Vector): Vector =
   var
-    alpha = float64(0)
+    alpha = 0'f64
     m = A.T * (A * x0 - b)
     t = -(innerProduct(m, A.T * (A * x0 - b))) / (innerProduct(m, A.T * A * m))
   result = x0 + m * t
@@ -71,7 +71,7 @@ proc CGSolver(A: Matrix, b, x0: Vector): Vector =
     result = result + m * t
 
 when isMainModule:
-  let A: Matrix = @[@[float64(1), float64(0), float64(0)], @[float64(0), float64(2), float64(0)], @[float64(0), float64(0), float64(1)]]
-  let b: Vector = @[float64(4), float64(5), float64(6)]
-  var x: Vector = @[float64(0), float64(0), float64(0)]
+  let A: Matrix = @[@[1'f64, 0'f64, 0'f64], @[0'f64, 2'f64, 0'f64], @[0'f64, 0'f64, 1'f64]]
+  let b: Vector = @[4'f64, 5'f64, 6'f64]
+  var x: Vector = @[0'f64, 0'f64, 0'f64]
   echo CGSolver(A, b, x)
