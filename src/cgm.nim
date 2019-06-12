@@ -6,8 +6,6 @@ proc dot(a, b: Vector): float64 =
   for i in 0 ..< a.len: result = result + (a[i] * b[i])
 
 proc tensorDot(a, b: Matrix): Matrix =
-  for i in 0 ..< a.len: assert a[i].len == b.len
-
   for i in 0 ..< a.len:
     result.add(@[])
     for j in 0 ..< b.len:
@@ -16,8 +14,7 @@ proc tensorDot(a, b: Matrix): Matrix =
         result[i][j] = result[i][j] + (a[i][k] * b[k][j])
 
 proc innerProduct(a, b: Vector): float64 =
-  for i in 0 ..< a.len:
-    result = result + a[i] * b[i]
+  for i in 0 ..< a.len: result = result + a[i] * b[i]
 
 proc `*`(a, b: Matrix): Matrix = return tensorDot(a, b)
 
@@ -60,14 +57,21 @@ proc T(matrix: Matrix): Matrix =
     for j in 0 ..< matrix.len:
       result[i].add(matrix[j][i])
 
-proc CGSolver(A: Matrix, b, x0: Vector) =
-  var m = A.T * (A * x0 - b)
-  var t = -(innerProduct(m, A.T * (A * x0 - b))) / (innerProduct(m, A.T * A * m))
-  var x = x0 + m * t
-  echo x
+proc CGSolver(A: Matrix, b, x0: Vector): Vector =
+  var
+    alpha = float64(0)
+    m = A.T * (A * x0 - b)
+    t = -(innerProduct(m, A.T * (A * x0 - b))) / (innerProduct(m, A.T * A * m))
+  result = x0 + m * t
+
+  for i in 0 ..< 3:
+    alpha = -(innerProduct(m, A.T * A * A.T * (A * result - b))) / (innerProduct(m, A.T * A * m))
+    m = A.T * (A * result - b) + m * alpha
+    t = -(innerProduct(m, A.T * (A * result - b))) / (innerProduct(m, A.T * A * m))
+    result = result + m * t
 
 when isMainModule:
-  let A:Matrix = @[@[float64(1), float64(0), float64(0)], @[float64(0), float64(2), float64(0)], @[float64(0), float64(0), float64(1)]]
-  let b:Vector = @[float64(4), float64(5), float64(6)]
-  let x:Vector = @[float64(0), float64(0), float64(0)]
-  CGSolver(A, b, x)
+  let A: Matrix = @[@[float64(1), float64(0), float64(0)], @[float64(0), float64(2), float64(0)], @[float64(0), float64(0), float64(1)]]
+  let b: Vector = @[float64(4), float64(5), float64(6)]
+  var x: Vector = @[float64(0), float64(0), float64(0)]
+  echo CGSolver(A, b, x)
