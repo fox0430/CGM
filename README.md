@@ -1,2 +1,2 @@
 # CGM
-work in progress
+Note: This program is incomplete
