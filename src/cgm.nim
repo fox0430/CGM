@@ -17,7 +17,7 @@ proc CGSolver(A: Matrix, b: Vector, x: var Vector): Vector =
     let r1 = r - alpha * Ap
 
     let error = r1.vectorNorm / b.vectorNorm
-    echo error
+    #echo error
     if error < 10e-10: return x1
 
     let beta = (r1 * r1) / (r * r)
@@ -28,9 +28,9 @@ proc CGSolver(A: Matrix, b: Vector, x: var Vector): Vector =
 
   return x1
 
-proc initMatrixA(alpha, beta: float32, n: int): Matrix =
+proc initMatrixA(alpha, beta: float64, n: int): Matrix =
   for i in 0 ..< n - 1:
-    result.add(newSeq[float32](n - 1))
+    result.add(newSeq[float64](n - 1))
     if i == 0:
       result[i][0] = alpha
       result[i][1] = beta
@@ -41,24 +41,33 @@ proc initMatrixA(alpha, beta: float32, n: int): Matrix =
 
   #for i in 0 ..< result.len: echo result[i]
 
-proc initVectorb(beta: float32, n: int): Vector =
-  result = newSeq[float32](n - 1)
+proc initVectorb(beta: float64, n: int): Vector =
+  result = newSeq[float64](n - 1)
   result[n - 2] = - beta
 
   # echo result
 
 when isMainModule:
-  const n = 1000
+  const nSeq = @[10, 50, 100, 500, 1000]
+  for i in 0 ..< nSeq.len:
 
-  let
-    deltaX = PI / 2'f32 / float32(n)
-    alpha = - (2'f32 / deltaX^2) + 1'f32
-    beta = 1'f32 / deltaX^2
-    A = initMatrixA(alpha, beta, n)
-    b = initVectorb(beta, n)
-  var x: Vector = newSeq[float32](n - 1)
+    let
+      n = nSeq[i]
+      deltaX = PI / 2'f64 / float64(n)
+      alpha = - (2'f64 / deltaX^2) + 1'f64
+      beta = 1'f64 / deltaX^2
+      A = initMatrixA(alpha, beta, n)
+      b = initVectorb(beta, n)
+    var x: Vector = newSeq[float64](n - 1)
 
-  let ans = CGSolver(A, b, x)
+    let ans = CGSolver(A, b, x)
 
-  #echo "ans"
-  #echo ans
+    var error = abs(ans[0] - sin(deltaX)) / abs(sin(deltaX))
+    for j in 1 ..< ans.len:
+      let error1 = abs(ans[j] - sin(float(j + 1) * deltaX)) / sin(float(j + 1) * deltaX)
+      if error < error1: error = error1
+
+    echo n
+    echo error
+    echo ""
+
