@@ -17,7 +17,7 @@ proc CGSolver(A: Matrix, b: Vector, x: var Vector): Vector =
     let r1 = r - alpha * Ap
 
     let error = r1.vectorNorm / b.vectorNorm
-    #echo error
+    echo error
     if error < 10e-10: return x1
 
     let beta = (r1 * r1) / (r * r)
@@ -43,9 +43,7 @@ proc initMatrixA(alpha, beta: float32, n: int): Matrix =
 
 proc initVectorb(beta: float32, n: int): Vector =
   result = newSeq[float32](n - 1)
-  for i in 0 ..< n - 1:
-    if i == 0 or i == n - 2: result[i] = 4
-    else: result[i] = 5
+  result[n - 2] = - beta
 
   # echo result
 
@@ -53,12 +51,14 @@ when isMainModule:
   const n = 1000
 
   let
-    #deltaX = PI / 2 / n
-    A = initMatrixA(3, 1, n)
-    b = initVectorb(4, n)
+    deltaX = PI / 2'f32 / float32(n)
+    alpha = - (2'f32 / deltaX^2) + 1'f32
+    beta = 1'f32 / deltaX^2
+    A = initMatrixA(alpha, beta, n)
+    b = initVectorb(beta, n)
   var x: Vector = newSeq[float32](n - 1)
 
   let ans = CGSolver(A, b, x)
 
-  echo "ans"
-  echo ans
+  #echo "ans"
+  #echo ans
