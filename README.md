@@ -1,2 +1,2 @@
 # CGM
-Note: This program is incomplete
+Conjugate gradient method written in Nim.
