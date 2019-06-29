@@ -1,5 +1,14 @@
-import math
+import os, math, strformat
 import calcutils
+
+type CalcError = object
+  n: int
+  error: float64
+
+proc writeCalcErrorLog(errors: seq[CalcError]) =
+  echo "Write log file..."
+  var f = open("calcErrorLog.txt", FileMode.fmWrite)
+  for i in 0 ..< errors.len: f.writeLine($errors[i].n & " " & $errors[i].error)
 
 proc CGSolver(A: Matrix, b: Vector, x: var Vector): Vector =
   var
@@ -17,7 +26,6 @@ proc CGSolver(A: Matrix, b: Vector, x: var Vector): Vector =
     let r1 = r - alpha * Ap
 
     let error = r1.vectorNorm / b.vectorNorm
-    #echo error
     if error < 10e-10: return x1
 
     let beta = (r1 * r1) / (r * r)
@@ -39,16 +47,20 @@ proc initMatrixA(alpha, beta: float64, n: int): Matrix =
       if i < n - 1: result[i][i] = alpha
       if i + 1 < n - 1: result[i][i + 1] = beta
 
-  #for i in 0 ..< result.len: echo result[i]
-
 proc initVectorb(beta: float64, n: int): Vector =
   result = newSeq[float64](n - 1)
   result[n - 2] = - beta
 
-  # echo result
+proc calcCGMError(ans: seq[float64], deltaX: float64): float64 =
+  result = abs(ans[0] - sin(deltaX)) / abs(sin(deltaX))
+  for j in 1 ..< ans.len:
+    let error1 = abs(ans[j] - sin(float(j + 1) * deltaX)) / sin(float(j + 1) * deltaX)
+    if result < error1: result = error1
 
 when isMainModule:
   const nSeq = @[10, 50, 100, 500, 1000]
+  var errors: seq[CalcError]
+
   for i in 0 ..< nSeq.len:
 
     let
@@ -61,13 +73,12 @@ when isMainModule:
     var x: Vector = newSeq[float64](n - 1)
 
     let ans = CGSolver(A, b, x)
+    
+    let
+      error = calcCGMError(ans, deltaX)
+      calcError = CalcError(n: n, error: error)
 
-    var error = abs(ans[0] - sin(deltaX)) / abs(sin(deltaX))
-    for j in 1 ..< ans.len:
-      let error1 = abs(ans[j] - sin(float(j + 1) * deltaX)) / sin(float(j + 1) * deltaX)
-      if error < error1: error = error1
+    echo fmt"Exit n: {n}"
+    errors.add(calcError)
 
-    echo n
-    echo error
-    echo ""
-
+  writeCalcErrorLog(errors)
