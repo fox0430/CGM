@@ -10,7 +10,8 @@ proc writeCalcErrorLog(errors: seq[CalcError]) =
   var f = open("calcErrorLog.txt", FileMode.fmWrite)
   for i in 0 ..< errors.len: f.writeLine($errors[i].n & " " & $errors[i].error)
 
-proc CGSolver(A: Matrix, b: Vector, x: var Vector): Vector =
+## Conjugate gradient method
+proc CGM(A: Matrix, b: Vector, x: var Vector): Vector =
   var
     r = b - A * x
     p = r
@@ -72,7 +73,7 @@ when isMainModule:
       b = initVectorb(beta, n)
     var x: Vector = newSeq[float64](n - 1)
 
-    let ans = CGSolver(A, b, x)
+    let ans = CGM(A, b, x)
     
     let
       error = calcCGMError(ans, deltaX)
