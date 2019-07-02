@@ -1,4 +1,4 @@
-import os, math, strformat
+import os, math, strformat, times
 import calcutils
 
 type CalcError = object
@@ -73,7 +73,9 @@ when isMainModule:
       b = initVectorb(beta, n)
     var x: Vector = newSeq[float64](n - 1)
 
+    let time = cpuTime()
     let ans = CGM(A, b, x)
+    echo "Time taken: ", cpuTime() - time
     
     let
       error = calcCGMError(ans, deltaX)
@@ -82,4 +84,4 @@ when isMainModule:
     echo fmt"Exit n: {n}"
     errors.add(calcError)
 
-  writeCalcErrorLog(errors)
+  #writeCalcErrorLog(errors)
